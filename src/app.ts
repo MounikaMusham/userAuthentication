@@ -2,7 +2,7 @@ import express from 'express';
 import nodemailer from 'nodemailer';
 import cors from 'cors';
 import mongoose from "mongoose";
-import db from './config';
+import db from './API/config';
 import routerFile from './router';
 const app = express();
 app.use(express.json({ limit: '50mb' }));
@@ -13,7 +13,7 @@ mongoose.connection.on("connected",()=>{
     console.log('connected to database')
 })
 
-//Handling CORS error
+//Handling CORS error 
 const corsOptions = {
     methods:'GET,PUT,POST,DELETE',
     origin:'*'
