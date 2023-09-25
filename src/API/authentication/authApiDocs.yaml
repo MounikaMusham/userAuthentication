@@ -1,0 +1,66 @@
+swagger: "2.0"
+info:
+ title: Authentication API's
+
+tags:  # Define a global tag
+  - name: User Management  # Name of the global tag
+securitySchemes:
+  UserToken:
+    type: apiKey
+    in: header
+    name: Authorization
+
+schemes: [http,https]
+
+#user signUp API
+paths: 
+ /app/userSignUp:
+  post:
+    summary: Adds a new user
+    produces:
+      - application/json
+    consumes:
+      - application/json
+    parameters:
+      - in: body
+        name: body
+        schema:
+          $ref: "#/components/schemas/UserSignUp"
+    responses:
+      '200':
+        description: OK
+    tags:  
+      - User Management
+#schemas
+components:
+  schemas:
+    UserSignUp:
+      type: object
+      required:
+        - name
+        - id
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        gender:
+          type: string
+        DOB:
+          type: string
+        email:
+          type: string    
+        mobileNumber:
+          type: number               
+        password:
+          type: string
+    userSignIn: 
+      type: object
+      required:
+      - email
+      - password
+      properties:
+        email:
+          type: string
+        password:
+          type: string

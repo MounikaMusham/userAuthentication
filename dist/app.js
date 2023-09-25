@@ -15,7 +15,7 @@ mongoose_1.default.connect(config_1.default.db_url);
 mongoose_1.default.connection.on("connected", () => {
     console.log('connected to database');
 });
-//Handling CORS error
+//Handling CORS error 
 const corsOptions = {
     methods: 'GET,PUT,POST,DELETE',
     origin: '*'
