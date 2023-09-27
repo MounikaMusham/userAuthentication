@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs';
 import authModel from '../models/authModel';
 import nodemailer from 'nodemailer';
+import jwt from 'jsonwebtoken'
 
 var transport = nodemailer.createTransport({
   host:'smtp.titan.email',
@@ -12,6 +13,7 @@ var transport = nodemailer.createTransport({
   }
 })
 const emailVerificationTokens: { [key: string]: string } = {};
+let invalidAttempts = 0;
  async function userSignup(body:any){
   const { firstName, lastName, gender, DOB, email, mobileNumber } = body;
   try {
@@ -111,4 +113,63 @@ if(email){
 }
 }
 
-export default {userSignup,verifyEmail}
+async function userSignIn(body:any){
+  try {
+    const user = await authModel.findOne({ email:body.email});
+    if (!user) {
+      //if not found sending message as not registered
+      return Promise.reject({
+        statusCode: 401,
+        status: false,
+        data: {},
+        msgs: "User not registered, please signup",
+        err: "Bad Request",
+      });
+    }
+    //if user exists checking the password match
+    const isPasswordValid = await bcrypt.compare(body.password, user.password);
+
+    if (!isPasswordValid) {
+      //if password not matched sending message as invalid password
+      invalidAttempts++
+      console.log('invalidAttempts',invalidAttempts)
+      if(invalidAttempts >=3){
+        return Promise.reject({
+          statusCode: 401,
+          status: false,
+          data: {},
+          message: "Account blocked , Please rest the password and try login again",
+          error: "Bad Request",
+        });
+      }
+      return Promise.reject({
+        statusCode: 401,
+        status: false,
+        data: {},
+        message: "Invalid  password",
+        error: "Bad Request",
+      });
+    }
+    //if password matches generating jwt token
+    const token = jwt.sign(
+      { userId: user._id, email: body.email },
+      "#MMM@vvvv@AAA@AAA#",
+      {
+        expiresIn: "1d",
+      }
+    );
+    invalidAttempts = 0;
+    //sending token in response
+    return token;
+  } catch (error) {
+    return Promise.reject({
+      statusCode: 500,
+      status: false,
+      data: {},
+      message: "Bad Request",
+      error: error,
+    });
+  }
+}
+
+export default {userSignup,verifyEmail,userSignIn}

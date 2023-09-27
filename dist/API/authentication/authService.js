@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const authModel_1 = __importDefault(require("../models/authModel"));
 const nodemailer_1 = __importDefault(require("nodemailer"));
+const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 var transport = nodemailer_1.default.createTransport({
     host: 'smtp.titan.email',
     port: 465,
@@ -25,6 +26,7 @@ var transport = nodemailer_1.default.createTransport({
     }
 });
 const emailVerificationTokens = {};
+let invalidAttempts = 0;
 function userSignup(body) {
     return __awaiter(this, void 0, void 0, function* () {
         const { firstName, lastName, gender, DOB, email, mobileNumber } = body;
@@ -124,4 +126,60 @@ function verifyEmail(requestedToken) {
         }
     });
 }
-exports.default = { userSignup, verifyEmail };
+function userSignIn(body) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const user = yield authModel_1.default.findOne({ email: body.email });
+            if (!user) {
+                //if not found sending message as not registered
+                return Promise.reject({
+                    statusCode: 401,
+                    status: false,
+                    data: {},
+                    msgs: "User not registered, please signup",
+                    err: "Bad Request",
+                });
+            }
+            //if user exists checking the password match
+            const isPasswordValid = yield bcryptjs_1.default.compare(body.password, user.password);
+            if (!isPasswordValid) {
+                //if password not matched sending message as invalid password
+                invalidAttempts++;
+                console.log('invalidAttempts', invalidAttempts);
+                if (invalidAttempts >= 3) {
+                    return Promise.reject({
+                        statusCode: 401,
+                        status: false,
+                        data: {},
+                        message: "Account blocked , Please rest the password and try login again",
+                        error: "Bad Request",
+                    });
+                }
+                return Promise.reject({
+                    statusCode: 401,
+                    status: false,
+                    data: {},
+                    message: "Invalid  password",
+                    error: "Bad Request",
+                });
+            }
+            //if password matches generating jwt token
+            const token = jsonwebtoken_1.default.sign({ userId: user._id, email: body.email }, "#MMM@vvvv@AAA@AAA#", {
+                expiresIn: "1d",
+            });
+            invalidAttempts = 0;
+            //sending token in response
+            return token;
+        }
+        catch (error) {
+            return Promise.reject({
+                statusCode: 500,
+                status: false,
+                data: {},
+                message: "Bad Request",
+                error: error,
+            });
+        }
+    });
+}
+exports.default = { userSignup, verifyEmail, userSignIn };

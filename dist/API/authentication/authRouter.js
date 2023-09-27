@@ -74,4 +74,47 @@ router.get('/verifyEmail/:token', (req, res) => __awaiter(void 0, void 0, void 0
         });
     }
 }));
+router.post('/userSignIn', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        //checking validation whether required fields are coming in the body
+        const { error } = (0, authValidations_1.signInValidation)(req.body);
+        // if Validation fails throwing error
+        if (error) {
+            return res.status(400).json({
+                status: 400,
+                message: error.details[0].message,
+                data: {},
+                response: "false",
+            });
+        }
+        try {
+            const token = yield authService_1.default.userSignIn(req.body);
+            res.status(200).json({
+                status: 200,
+                message: responseMessages_1.default.signInSuccess,
+                data: token,
+                response: "success",
+            });
+        }
+        catch (error) {
+            //sending error occurred  based on the type of error message
+            return res.status(401).json({
+                status: 401,
+                message: error.message,
+                data: {},
+                response: "false",
+            });
+        }
+    }
+    catch (error) {
+        //sending error based on the type of error message
+        console.log("error", error);
+        res.status(500).json({
+            status: 500,
+            message: responseMessages_1.default.someThingWrong,
+            data: {},
+            response: "failed",
+        });
+    }
+}));
 exports.default = router;

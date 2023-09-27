@@ -20,3 +20,18 @@ export function signUpValidation(body: any) {
     return schema.validate(body);
   }
   
+  export function signInValidation(body:any){
+    const schema = joi.object({
+      email: joi.string().email().required(),
+      password: joi
+        .string()
+        .min(8)
+        .max(15)
+        .pattern(
+          /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,15}$/
+        )
+        .required(),
+    })
+    return schema.validate(body);
+  }
+  

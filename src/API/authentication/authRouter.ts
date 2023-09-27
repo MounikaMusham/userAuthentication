@@ -1,5 +1,5 @@
 import express, { Router } from "express";
-import {signUpValidation} from '../authentication/authValidations'
+import {signUpValidation , signInValidation} from '../authentication/authValidations'
 import authModel from '../models/authModel';
 import authService from '../authentication/authService';
 import responseMessages from './../../responseMessages';
@@ -63,6 +63,50 @@ router.get('/verifyEmail/:token',async (req,res)=>{
       response: "failed",
     });
    }
+})
+
+router.post('/userSignIn',async (req,res)=>{
+  try {
+       //checking validation whether required fields are coming in the body
+       const { error } = signInValidation(req.body);
+       // if Validation fails throwing error
+       if (error) {
+         return res.status(400).json({
+           status: 400,
+           message: error.details[0].message,
+           data: {},
+           response: "false",
+         });
+       }
+       try {
+        const token = await authService.userSignIn(req.body);
+        res.status(200).json({
+          status: 200,
+          message: responseMessages.signInSuccess,
+          data: token,
+          response: "success",
+        });
+        
+       } catch (error:any) {
+        //sending error occurred  based on the type of error message
+        return res.status(401).json({
+        status: 401,
+        message: error.message,
+        data: {},
+        response: "false",
+      });
+       }
+    
+  } catch (error) {
+        //sending error based on the type of error message
+        console.log("error", error);
+        res.status(500).json({
+          status: 500,
+          message: responseMessages.someThingWrong,
+          data: {},
+          response: "failed",
+        });
+  }
 })
 
 export default router;

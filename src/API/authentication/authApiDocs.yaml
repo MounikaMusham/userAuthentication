@@ -31,6 +31,26 @@ paths:
         description: OK
     tags:  
       - User Management
+
+#user signIn API
+ /app/userSignIn:
+  post:
+    summary: user login
+    produces:
+      - application/json
+    consumes:
+      - application/json
+    parameters:
+      - in: body
+        name: body
+        schema:
+          $ref: "#/components/schemas/userSignIn"
+    responses:
+      '200':
+        description: OK
+    tags:  
+      - User Management
+
 #schemas
 components:
   schemas:
