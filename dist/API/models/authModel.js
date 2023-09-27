@@ -35,6 +35,10 @@ var signUpSchema = new mongoose_1.default.Schema({
         type: String,
         required: true
     },
+    isEmailVerified: {
+        type: Boolean,
+        default: false
+    },
 });
 var signUpSchema = mongoose_1.default.model("UserAuthentication", signUpSchema);
 exports.default = signUpSchema;

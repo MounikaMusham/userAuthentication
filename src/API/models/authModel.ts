@@ -1,3 +1,4 @@
+import { boolean } from 'joi';
 import mongoose from 'mongoose';
 
 var  signUpSchema:any = new mongoose.Schema({
@@ -30,6 +31,10 @@ var  signUpSchema:any = new mongoose.Schema({
     password:{
         type:String,
         required:true
+    }, 
+    isEmailVerified:{
+        type:Boolean,
+        default:false
     },    
 })
 var signUpSchema:any = mongoose.model("UserAuthentication",signUpSchema);
