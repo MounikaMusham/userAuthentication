@@ -39,6 +39,10 @@ var signUpSchema = new mongoose_1.default.Schema({
         type: Boolean,
         default: false
     },
+    isEmailVerifiedForForgotPassword: {
+        type: Boolean,
+        default: false
+    },
 });
 var signUpSchema = mongoose_1.default.model("UserAuthentication", signUpSchema);
 exports.default = signUpSchema;

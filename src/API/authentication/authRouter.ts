@@ -109,4 +109,63 @@ router.post('/userSignIn',async (req,res)=>{
   }
 })
 
+router.post('/forgot-password',async (req,res)=>{
+  try {
+    const forgotPasswordVerification = await authService.forgotPassword(req.body)
+    if(forgotPasswordVerification){
+      res.status(200).json({
+        status: 200,
+        response: "Verification link sent to your registered email, please verify the email",
+      }); 
+    }
+  } catch (error) {
+    console.log("error", error);
+    res.status(500).json({
+      status: 500,
+      message: responseMessages.someThingWrong,
+      data: {},
+      response: "failed",
+    });
+  }
+})
+router.get('/verifyResetPassword/:token',async (req,res)=>{
+  try {
+   const emailVerification = await authService.verifyResetPassword(req.params.token);
+   if(emailVerification){
+     res.status(200).json({
+       status: 200,
+       response: "Email verified Successfully",
+     }); 
+   }
+   
+  } catch (error) {
+   res.status(500).json({
+     status: 500,
+     message: responseMessages.someThingWrong,
+     data: {},
+     response: "failed",
+   });
+  }
+})
+
+router.post('/create-new-password', async(req,res)=>{
+  try {
+    const newPassword = await authService.createNewPassword(req.body)
+    if(newPassword){
+      res.status(200).json({
+        status: 200,
+        response: "Password changed successfully",
+      }); 
+    }
+    
+  } catch (error) {
+    res.status(500).json({
+      status: 500,
+      message: responseMessages.someThingWrong,
+      data: {},
+      response: "failed",
+    });
+  }
+})
+
 export default router;

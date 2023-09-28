@@ -35,6 +35,10 @@ var  signUpSchema:any = new mongoose.Schema({
     isEmailVerified:{
         type:Boolean,
         default:false
+    }, 
+    isEmailVerifiedForForgotPassword:{
+        type:Boolean,
+        default:false
     },    
 })
 var signUpSchema:any = mongoose.model("UserAuthentication",signUpSchema);

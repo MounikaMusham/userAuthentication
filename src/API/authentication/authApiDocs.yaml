@@ -51,6 +51,44 @@ paths:
     tags:  
       - User Management
 
+ #user forgot-password API
+ /app/forgot-password:
+  post:
+    summary: user login
+    produces:
+      - application/json
+    consumes:
+      - application/json
+    parameters:
+      - in: body
+        name: body
+        schema:
+          $ref: "#/components/schemas/userForgotPassword"
+    responses:
+      '200':
+        description: OK
+    tags:  
+      - User Management     
+
+ #user create new password API
+ /app/create-new-password:
+  post:
+    summary: user login
+    produces:
+      - application/json
+    consumes:
+      - application/json
+    parameters:
+      - in: body
+        name: body
+        schema:
+          $ref: "#/components/schemas/createNewPassword"
+    responses:
+      '200':
+        description: OK
+    tags:  
+      - User Management 
+
 #schemas
 components:
   schemas:
@@ -85,4 +123,21 @@ components:
         email:
           type: string
         password:
+          type: string
+    userForgotPassword: 
+      type: object
+      required:
+      - email
+      properties:
+        email:
+          type: string          
+    createNewPassword: 
+      type: object
+      required:
+      - email
+      - newPassword
+      properties:
+        email:
+          type: string
+        newPassword:
           type: string

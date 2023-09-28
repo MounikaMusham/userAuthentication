@@ -117,4 +117,62 @@ router.post('/userSignIn', (req, res) => __awaiter(void 0, void 0, void 0, funct
         });
     }
 }));
+router.post('/forgot-password', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const forgotPasswordVerification = yield authService_1.default.forgotPassword(req.body);
+        if (forgotPasswordVerification) {
+            res.status(200).json({
+                status: 200,
+                response: "Verification link sent to your registered email, please verify the email",
+            });
+        }
+    }
+    catch (error) {
+        console.log("error", error);
+        res.status(500).json({
+            status: 500,
+            message: responseMessages_1.default.someThingWrong,
+            data: {},
+            response: "failed",
+        });
+    }
+}));
+router.get('/verifyResetPassword/:token', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const emailVerification = yield authService_1.default.verifyResetPassword(req.params.token);
+        if (emailVerification) {
+            res.status(200).json({
+                status: 200,
+                response: "Email verified Successfully",
+            });
+        }
+    }
+    catch (error) {
+        res.status(500).json({
+            status: 500,
+            message: responseMessages_1.default.someThingWrong,
+            data: {},
+            response: "failed",
+        });
+    }
+}));
+router.post('/create-new-password', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const newPassword = yield authService_1.default.createNewPassword(req.body);
+        if (newPassword) {
+            res.status(200).json({
+                status: 200,
+                response: "Password changed successfully",
+            });
+        }
+    }
+    catch (error) {
+        res.status(500).json({
+            status: 500,
+            message: responseMessages_1.default.someThingWrong,
+            data: {},
+            response: "failed",
+        });
+    }
+}));
 exports.default = router;

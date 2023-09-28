@@ -163,13 +163,23 @@ function userSignIn(body) {
                     error: "Bad Request",
                 });
             }
-            //if password matches generating jwt token
-            const token = jsonwebtoken_1.default.sign({ userId: user._id, email: body.email }, "#MMM@vvvv@AAA@AAA#", {
-                expiresIn: "1d",
-            });
-            invalidAttempts = 0;
-            //sending token in response
-            return token;
+            if (isPasswordValid && invalidAttempts < 3) {
+                //if password matches generating jwt token
+                const token = jsonwebtoken_1.default.sign({ userId: user._id, email: body.email }, "#MMM@vvvv@AAA@AAA#", {
+                    expiresIn: "1d",
+                });
+                invalidAttempts = 0;
+                //sending token in response
+                return token;
+            }
+            else {
+                return Promise.reject({
+                    statusCode: 400,
+                    status: false,
+                    data: {},
+                    message: "Crossed invalid attempts limit",
+                });
+            }
         }
         catch (error) {
             return Promise.reject({
@@ -182,4 +192,121 @@ function userSignIn(body) {
         }
     });
 }
-exports.default = { userSignup, verifyEmail, userSignIn };
+function forgotPassword(body) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const { email } = body;
+            const user = yield authModel_1.default.findOne({ email });
+            if (!user) {
+                return Promise.reject({
+                    statusCode: 500,
+                    status: false,
+                    data: {},
+                    message: "User not found",
+                });
+            }
+            const token = Math.random().toString(36).substr(2);
+            emailVerificationTokens[email] = token;
+            const verificationLink = `http://localhost:8001/app/verifyResetPassword/${token}`;
+            var mailOptions = {
+                from: 'mounika.m@tynybay.io',
+                to: 'mounika.musham11@gmail.com',
+                subject: 'Reset password- Mounika Musham',
+                html: `<p>click the below link to verify your email <a href='${verificationLink}'>verify</a></p>`
+            };
+            transport.sendMail(mailOptions, function (error, info) {
+                return __awaiter(this, void 0, void 0, function* () {
+                    if (error) {
+                        console.log('nodemailer error', error);
+                    }
+                    else {
+                        const user = yield authModel_1.default.updateOne({ email }, { $set: { isEmailVerifiedForForgotPassword: false } });
+                        console.log('Email sent' + info.response);
+                    }
+                });
+            });
+            return true;
+        }
+        catch (error) {
+            return Promise.reject({
+                statusCode: 500,
+                status: false,
+                data: {},
+                message: "Bad Request",
+                error: error,
+            });
+        }
+    });
+}
+function verifyResetPassword(requestedToken) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const token = requestedToken;
+        const email = Object.keys(emailVerificationTokens).find((key) => emailVerificationTokens[key] === token);
+        if (email) {
+            delete emailVerificationTokens[email];
+            try {
+                const user = yield authModel_1.default.findOneAndUpdate({ email }, { isEmailVerifiedForForgotPassword: true });
+                if (!user) {
+                    return Promise.reject({
+                        statusCode: 400,
+                        status: false,
+                        data: {},
+                        message: "user not found",
+                    });
+                }
+                return Promise.resolve({
+                    statusCode: 400,
+                    status: false,
+                    data: {},
+                    message: "email verified successfully",
+                });
+            }
+            catch (error) {
+                console.error(error);
+                return Promise.reject({
+                    statusCode: 400,
+                    status: false,
+                    data: {},
+                    message: error,
+                });
+            }
+        }
+        else {
+            return Promise.reject({
+                statusCode: 400,
+                status: false,
+                data: {},
+                message: 'Invalid or Token expired',
+            });
+        }
+    });
+}
+function createNewPassword(body) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const { email, newPassword } = body;
+            const salt = yield bcryptjs_1.default.genSalt(10);
+            // Update the user's password in the database (you should hash newPassword before saving it)
+            const hashedPassword = yield bcryptjs_1.default.hash(newPassword, salt);
+            const user = yield authModel_1.default.findOneAndUpdate({ email }, { password: hashedPassword });
+            if (!user) {
+                return Promise.reject({
+                    statusCode: 400,
+                    status: false,
+                    data: {},
+                    message: 'user not found',
+                });
+            }
+            return user;
+        }
+        catch (error) {
+            return Promise.reject({
+                statusCode: 400,
+                status: false,
+                data: {},
+                message: 'Invalid or Token expired',
+            });
+        }
+    });
+}
+exports.default = { userSignup, verifyEmail, userSignIn, forgotPassword, verifyResetPassword, createNewPassword };
