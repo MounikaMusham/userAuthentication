@@ -284,8 +284,18 @@ async function verifyResetPassword(requestedToken:any){
             message:'user not found',
           });
         }
+        if(user.isEmailVerifiedForForgotPassword){
     
-       return user
+          return user
+        }else{
+          return Promise.reject({
+            statusCode: 400,
+            status: false,
+            data: {},
+            message:'Please verify your email to create new password',
+          });
+        }
+
     } catch (error) {
       return Promise.reject({
         statusCode: 400,
@@ -295,5 +305,47 @@ async function verifyResetPassword(requestedToken:any){
       });
     }
   }
+async function changePassword(userId:any,body:any){
+   const { currentPassword, newPassword } = body;
+   const user = await authModel.findById(userId);
+   if (!user) {
+    return Promise.reject({
+      statusCode: 400,
+      status: false,
+      data: {},
+      message:'User Not found',
+    });
+  }
 
-export default {userSignup,verifyEmail,userSignIn,forgotPassword,verifyResetPassword,createNewPassword}
+  // Check if the provided current password matches the hashed password in the database
+  const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
+
+  if (!isPasswordValid) {
+    return Promise.reject({
+      statusCode: 400,
+      status: false,
+      data: {},
+      message:'Invalid Password',
+    });
+  }
+
+  // Hash the new password and update it in the database
+  const hashedPassword = await bcrypt.hash(newPassword, 10);
+  user.password = hashedPassword;
+  var mailOptions = {
+    from:'mounika.m@tynybay.io',
+    to:'mounika.musham11@gmail.com',
+    subject: 'Password Change Confirmation',
+    text: 'Your password has been successfully changed.',   
+  }
+  transport.sendMail(mailOptions,function(error,info){
+    if(error){
+        console.log('nodemailer error',error)
+    }else{
+        console.log('Email sent'+ info.response)
+    }
+})
+return user
+}
+
+export default {userSignup,verifyEmail,userSignIn,forgotPassword,verifyResetPassword,createNewPassword,changePassword}

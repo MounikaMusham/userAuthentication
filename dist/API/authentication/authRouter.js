@@ -14,8 +14,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const authValidations_1 = require("../authentication/authValidations");
+const authModel_1 = __importDefault(require("../models/authModel"));
 const authService_1 = __importDefault(require("../authentication/authService"));
 const responseMessages_1 = __importDefault(require("./../../responseMessages"));
+const validateToken_1 = __importDefault(require("./validateToken"));
 const router = express_1.default.Router();
 //API for Sign up process
 router.post('/userSignUp', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -173,6 +175,56 @@ router.post('/create-new-password', (req, res) => __awaiter(void 0, void 0, void
             data: {},
             response: "failed",
         });
+    }
+}));
+router.get('/get-logged-user-profile/:userId', validateToken_1.default, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const userId = req.params.userId;
+        const user = yield authModel_1.default.findById(userId);
+        const userDetails = {
+            firstName: user.firstName,
+            lastName: user.lastName,
+            gender: user.gender,
+            DOB: user.DOB,
+            email: user.email,
+            mobileNumber: user.mobileNumber,
+        };
+        res.status(200).json({
+            status: 200,
+            data: userDetails,
+            response: "user details fetched successfully",
+        });
+    }
+    catch (error) {
+        res.status(500).json({
+            status: 500,
+            message: responseMessages_1.default.someThingWrong,
+            data: {},
+            response: "failed",
+        });
+    }
+}));
+router.post('/change-password/:userId', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const userId = req.params.userId;
+        if (userId) {
+            const user = yield authService_1.default.changePassword(userId, req.body);
+            if (user) {
+                yield user.save();
+                res.status(200).json({
+                    status: 200,
+                    response: "Password changed successfully",
+                });
+            }
+        }
+        else {
+            res.status(404).json({
+                status: 404,
+                response: "User not found",
+            });
+        }
+    }
+    catch (error) {
     }
 }));
 exports.default = router;

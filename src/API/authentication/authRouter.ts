@@ -3,6 +3,7 @@ import {signUpValidation , signInValidation} from '../authentication/authValidat
 import authModel from '../models/authModel';
 import authService from '../authentication/authService';
 import responseMessages from './../../responseMessages';
+import validateToken from './validateToken'
 const router: Router = express.Router();
 
 //API for Sign up process
@@ -165,6 +166,57 @@ router.post('/create-new-password', async(req,res)=>{
       data: {},
       response: "failed",
     });
+  }
+})
+
+router.get('/get-logged-user-profile/:userId',validateToken,async (req,res)=>{
+  try {
+    const userId = req.params.userId;
+    const user = await authModel.findById(userId);
+    const userDetails = {
+      firstName: user.firstName,
+      lastName: user.lastName,
+      gender: user.gender,
+      DOB: user.DOB,
+      email: user.email,
+      mobileNumber: user.mobileNumber,      
+    }
+    res.status(200).json({
+      status: 200,
+      data:userDetails,
+      response: "user details fetched successfully",
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      status: 500,
+      message: responseMessages.someThingWrong,
+      data: {},
+      response: "failed",
+    });
+  }
+})
+
+router.post('/change-password/:userId',async(req,res)=>{
+  try {
+    const userId = req.params.userId;
+    if(userId){
+     const user = await authService.changePassword(userId,req.body);
+     if(user){
+       await user.save();
+       res.status(200).json({
+        status: 200,
+        response: "Password changed successfully",
+      }); 
+     }
+    }else{
+      res.status(404).json({
+        status: 404,
+        response: "User not found",
+      }); 
+    }
+  } catch (error) {
+    
   }
 })
 

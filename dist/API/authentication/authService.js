@@ -297,7 +297,17 @@ function createNewPassword(body) {
                     message: 'user not found',
                 });
             }
-            return user;
+            if (user.isEmailVerifiedForForgotPassword) {
+                return user;
+            }
+            else {
+                return Promise.reject({
+                    statusCode: 400,
+                    status: false,
+                    data: {},
+                    message: 'Please verify your email to create new password',
+                });
+            }
         }
         catch (error) {
             return Promise.reject({
@@ -309,4 +319,46 @@ function createNewPassword(body) {
         }
     });
 }
-exports.default = { userSignup, verifyEmail, userSignIn, forgotPassword, verifyResetPassword, createNewPassword };
+function changePassword(userId, body) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const { currentPassword, newPassword } = body;
+        const user = yield authModel_1.default.findById(userId);
+        if (!user) {
+            return Promise.reject({
+                statusCode: 400,
+                status: false,
+                data: {},
+                message: 'User Not found',
+            });
+        }
+        // Check if the provided current password matches the hashed password in the database
+        const isPasswordValid = yield bcryptjs_1.default.compare(currentPassword, user.password);
+        if (!isPasswordValid) {
+            return Promise.reject({
+                statusCode: 400,
+                status: false,
+                data: {},
+                message: 'Invalid Password',
+            });
+        }
+        // Hash the new password and update it in the database
+        const hashedPassword = yield bcryptjs_1.default.hash(newPassword, 10);
+        user.password = hashedPassword;
+        var mailOptions = {
+            from: 'mounika.m@tynybay.io',
+            to: 'mounika.musham11@gmail.com',
+            subject: 'Password Change Confirmation',
+            text: 'Your password has been successfully changed.',
+        };
+        transport.sendMail(mailOptions, function (error, info) {
+            if (error) {
+                console.log('nodemailer error', error);
+            }
+            else {
+                console.log('Email sent' + info.response);
+            }
+        });
+        return user;
+    });
+}
+exports.default = { userSignup, verifyEmail, userSignIn, forgotPassword, verifyResetPassword, createNewPassword, changePassword };

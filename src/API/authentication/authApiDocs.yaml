@@ -89,6 +89,51 @@ paths:
     tags:  
       - User Management 
 
+ #API to get user profile
+ /app/get-logged-user-profile/{userId}:
+  get:
+    summary: user login
+    produces:
+      - application/json
+    consumes:
+      - application/json
+    parameters:
+      - in: path
+        name: userId
+        required: true
+        description: provide id of user to get details
+        schema:
+          type: string
+    responses:
+      '200':
+        description: OK
+    tags:  
+      - User Management 
+
+ #API to change user password
+ /app/change-password/{userId}:
+  post:
+    summary: user login
+    produces:
+      - application/json
+    consumes:
+      - application/json
+    parameters:
+      - name: userId
+        in: path
+        required: true
+        description: provide id of user to get details
+        schema:
+          type: string
+      - name: body
+        in: body
+        schema:
+          $ref: "#/components/schemas/changePassword"
+    responses:
+      '200':
+        description: OK
+    tags:  
+      - User Management          
 #schemas
 components:
   schemas:
@@ -141,3 +186,12 @@ components:
           type: string
         newPassword:
           type: string
+    changePassword: 
+      type: object
+      required:
+      - email
+      properties:
+        currentPassword:
+          type: string             
+        newPassword:
+          type: string           
