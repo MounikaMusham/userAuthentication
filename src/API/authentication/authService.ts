@@ -9,7 +9,7 @@ var transport = nodemailer.createTransport({
   secure:true,
   auth:{
       user:'mounika.m@tynybay.io',
-      pass:'Mouni@vinay9487'
+      pass:'************'
   }
 })
 const emailVerificationTokens: { [key: string]: string } = {};

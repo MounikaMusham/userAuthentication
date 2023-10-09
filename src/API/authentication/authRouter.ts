@@ -216,7 +216,12 @@ router.post('/change-password/:userId',async(req,res)=>{
       }); 
     }
   } catch (error) {
-    
+    res.status(500).json({
+      status: 500,
+      message: responseMessages.someThingWrong,
+      data: {},
+      response: "failed",
+    });
   }
 })
 
